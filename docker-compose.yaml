@@ -1,27 +1,66 @@
 version: '3'
 services:
-  faust-project:
+  faust-example:
     tty: true
-    build: ./faust-project
+    build: ./faust-project/example
     command: ./run.sh
     depends_on:
       - zookeeper
       - kafka
-      - schema-registry
     environment:
       - WORKER=example
       - WORKER_PORT=6066
       - KAFKA_BOOTSTRAP_SERVER=kafka://kafka:9092
       - KAFKA_BOOSTRAP_SERVER_NAME=kafka
       - KAFKA_BOOSTRAP_SERVER_PORT=9092
-      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
-      - SCHEMA_REGISTRY_SERVER=schema-registry
-      - SCHEMA_REGISTRY_SERVER_PORT=8081
+      - PYTHONPATH=:/faust-project
+
     ports:
       - "8084:80"
       - "8000:8000"
     volumes:
-      - ./scripts:/faust-project/scripts
+      - ./faust-project/example:/faust-project/example
+  faust-streaming:
+    tty: true
+    build: ./faust-project/faust_streaming
+    command: ./run.sh
+    depends_on:
+      - zookeeper
+      - kafka
+    environment:
+      - WORKER=faust_streaming
+      - WORKER_PORT=6066
+      - KAFKA_BOOTSTRAP_SERVER=kafka://kafka:9092
+      - KAFKA_BOOSTRAP_SERVER_NAME=kafka
+      - KAFKA_BOOSTRAP_SERVER_PORT=9092
+      - PYTHONPATH=:/faust-project
+
+    ports:
+      - "8085:80"
+      - "8001:8000"
+    volumes:
+      - ./faust-project/faust_streaming:/faust-project/faust_streaming
+  django_faust_streaming:
+    tty: true
+    build: ./faust-project/mysite
+    command: ./run.sh
+    depends_on:
+      - zookeeper
+      - kafka
+    environment:
+      - WORKER=django_faust_streaming
+      - WORKER_PORT=6066
+      - KAFKA_BOOTSTRAP_SERVER=kafka://kafka:9092
+      - KAFKA_BOOSTRAP_SERVER_NAME=kafka
+      - KAFKA_BOOSTRAP_SERVER_PORT=9092
+      - DJANGO_SETTINGS_MODULE=mysite.mysite.settings
+      - PYTHONPATH=:/faust-project
+
+    ports:
+      - "8086:80"
+      - "8006:8000"
+    volumes:
+      - ./faust-project/mysite:/faust-project/mysite
   zookeeper:
     image: "confluentinc/cp-zookeeper"
     hostname: zookeeper
@@ -44,17 +83,4 @@ services:
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT_HOST://localhost:29092,PLAINTEXT://kafka:9092
       - KAFKA_BROKER_ID=1
-  schema-registry:
-    image: confluentinc/cp-schema-registry
-    hostname: schema-registry
-    container_name: schema-registry
-    depends_on:
-      - kafka
-      - zookeeper
-    ports:
-      - "8081:8081"
-    environment:
-      - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zookeeper:32181
-      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
-      - SCHEMA_REGISTRY_DEBUG=true
 
