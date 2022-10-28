@@ -28,7 +28,7 @@ setup(
     dependency_links=[],
     entry_points={
         'console_scripts': [
-            'django_faust_streaming = mysite.faustapp.app:main',
+            'django_faust_streaming = faustapp.app:app',
         ],
     },
 )

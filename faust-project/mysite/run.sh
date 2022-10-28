@@ -1,5 +1,4 @@
 #!/bin/sh
 set -x
 
-$WORKER --help
-bash
+faust -A $WORKER worker --web-port=$WORKER_PORT

@@ -12,14 +12,15 @@ RUN apt-get install -y netcat && apt-get autoremove -y
 RUN adduser --disabled-password --gecos '' myuser
 
 WORKDIR /faust-project
-COPY run.sh /faust-project/run.sh
-COPY wait_for_services.sh /faust-project/wait_for_services.sh
+
 COPY setup.py /faust-project/setup.py
-COPY settings.py /faust-project/settings.py
 RUN pip3 install -e .
 
 
-COPY . /faust-project
+COPY run.sh /faust-project/run.sh
+COPY wait_for_services.sh /faust-project/wait_for_services.sh
+COPY settings.py /faust-project/settings.py
+COPY . /faust-project/example
 
 
 
